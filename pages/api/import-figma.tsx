@@ -32,7 +32,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       getFigmaFileByName(figmaFileName).then(async figmaResponse => {
 
-        const figmaData = figmaResponse.data;
+        if (!figmaResponse) {
+          res.status(404).json({ message: 'Figma file not found' });
+          return;
+        }
+        const figmaData = figmaResponse;
 
         // Extract text from Figma file
         const textNodes = extractTextNodes(figmaData);
@@ -77,8 +81,6 @@ async function getFigmaFileByName(fileName) {
 
       const file = filesResponse.data.files.find(f => f.name === fileName);
       if (file) {
-        console.log(`Found file: ${file.name}, ID: ${file.key}`);
-
         // Step 3: Fetch the file using the ID
         const figmaResponse = await axios.get(`https://api.figma.com/v1/files/${file.key}`, {
           headers: { 'X-Figma-Token': figmaToken }
