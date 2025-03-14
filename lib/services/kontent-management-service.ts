@@ -106,7 +106,9 @@ export default class KontentManagementService {
     const currentEnvId = defaultEnvId;
     const currentPreviewApiKey = defaultPreviewKey;
     const codename = name.toLowerCase().replace(/ /g, '_').replace(/[^a-zA-Z0-9-]/g, '_');
+    console.log(`Creating screen with codename ${codename}`)
     const existingCarrier = await getScreenByCodename({ envId: currentEnvId, previewApiKey: currentPreviewApiKey }, codename, true);
+
     if (existingCarrier) {
       const screenItem = await client
         .upsertLanguageVariant()

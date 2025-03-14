@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const name = figmaData.name;
     await importTextToKontent(textNodes, name);
 
-    res.status(200).json({ message: 'Text imported successfully' + textNodes.find(node => node.name === "title").text + textNodes.length + textNodes[1] });
+    res.status(200).json({ message: 'Text imported successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'An error occurred' });
@@ -52,6 +52,7 @@ function extractTextNodes(figmaData) {
 }
 
 async function importTextToKontent(textNodes, name) {
+  console.log('Importing text to Kontent.ai', textNodes);
   const kms = new KontentManagementService();
-  await kms.createScreen(name, textNodes.find(node => node.name === "title").text, textNodes.find(node => node.name === "content").text)
+  await kms.createScreen(name, textNodes.find(node => node.name === "☁️ title").text, textNodes.find(node => node.name === "content").text)
 }
