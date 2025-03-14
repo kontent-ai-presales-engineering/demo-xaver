@@ -26,11 +26,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Extract text from Figma file
     const textNodes = extractTextNodes(figmaData);
-    console.log(textNodes);
-
     // Import text into Kontent.ai
-    const codename = figmaData.document.name.replace(/\s+/g, '-').toLowerCase();
-    await importTextToKontent(textNodes, codename);
+    const name = figmaData.name;
+    await importTextToKontent(textNodes, name);
 
     res.status(200).json({ message: 'Text imported successfully' + textNodes.find(node => node.name === "title").text + textNodes.length + textNodes[1] });
   } catch (error) {
@@ -53,9 +51,7 @@ function extractTextNodes(figmaData) {
   return textNodes;
 }
 
-async function importTextToKontent(textNodes, codename) {
+async function importTextToKontent(textNodes, name) {
   const kms = new KontentManagementService();
-  for (const text of textNodes) {
-    await kms.createScreen(codename, textNodes.find(node => node.name === "title").text, textNodes.find(node => node.name === "content").text)
-  }
+  await kms.createScreen(name, textNodes.find(node => node.name === "title").text, textNodes.find(node => node.name === "content").text)
 }

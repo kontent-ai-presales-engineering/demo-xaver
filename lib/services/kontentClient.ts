@@ -9,7 +9,7 @@ const getDeliveryClient = ({ envId, previewApiKey }: ClientConfig) => createDeli
     canRetryError: (error) => {
       return true; // retries all the errors - not effficient but does the job
     },
-    maxAttempts: 5
+    maxAttempts: 1
   },
   environmentId: envId,
   globalHeaders: () => [
@@ -158,13 +158,29 @@ export const getItemByUrlSlug = <ItemType extends IContentItem>(config: ClientCo
     });
 }
 
-export const getScreenByCodename = (config: ClientConfig, codename: string, usePreview: boolean, languageCodename: string) =>
+export const getScreenByCodename = (config: ClientConfig, codename: string, usePreview: boolean) =>
   getDeliveryClient(config)
-    .items<Screen>()
-    .equalsFilter(`elements.${contentTypes.screen.codename}`, codename)
-    .languageParameter(languageCodename)
+    .item(codename)
     .queryConfig({
       usePreviewMode: usePreview,
     })
-    .toAllPromise()
-    .then(res => res.data.items[0]);
+    .toPromise()
+    .then(res => {
+      if (res.response.status === 404) {
+        return null;
+      }
+      return res.data.item as Screen
+    })
+    .catch((error) => {
+      debugger;
+      if (error instanceof DeliveryError) {
+        // delivery specific error (e.g. item with codename not found...)
+        console.error(error.message, error.errorCode);
+        return null;
+      } else {
+        // some other error
+        console.error("HTTP request error", error);
+        // throw error;
+        return null;
+      }
+    });

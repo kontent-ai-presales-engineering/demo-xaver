@@ -22,7 +22,7 @@ export default class KontentManagementService {
           return true; // retries all the errors - not effficient but does the job
         },
         maxAttempts: 5
-      },      
+      },
     });
   }
 
@@ -100,22 +100,45 @@ export default class KontentManagementService {
     return variants; // This will be an array of all language variants for the content item
   }
 
-  public async createScreen(codeName: string, title: string, content: string) {
+  public async createScreen(name: string, title: string, content: string) {
     const client = KontentManagementService.createKontentManagementClient()
 
     const currentEnvId = defaultEnvId;
     const currentPreviewApiKey = defaultPreviewKey;
-    const existingCarrier = await getScreenByCodename({ envId: currentEnvId, previewApiKey: currentPreviewApiKey }, codeName, true, "en-GB");
-
+    const codename = name.toLowerCase().replace(/ /g, '_').replace(/[^a-zA-Z0-9-]/g, '_');
+    const existingCarrier = await getScreenByCodename({ envId: currentEnvId, previewApiKey: currentPreviewApiKey }, codename, true);
     if (existingCarrier) {
-      return existingCarrier
+      const screenItem = await client
+        .upsertLanguageVariant()
+        .byItemId(existingCarrier.system.id)
+        .byLanguageId(this.defaultLanguageId)
+        .withData((builder) => {
+          return {
+            elements: [
+              builder.textElement({
+                element: {
+                  codename: contentTypes.screen.elements.title.codename
+                },
+                value: title
+              }),
+              builder.textElement({
+                element: {
+                  codename: contentTypes.screen.elements.content.codename
+                },
+                value: content
+              }),
+            ]
+          }
+        })
+        .toPromise();
+      return screenItem.data
     }
 
     const ScreenItem = await client
       .addContentItem()
       .withData(
         {
-          name: codeName,
+          name: name,
           type: {
             codename: contentTypes.screen.codename
           }
