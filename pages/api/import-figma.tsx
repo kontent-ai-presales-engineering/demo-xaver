@@ -21,14 +21,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await webhook.notifications.forEach(async notification => {
       const figmaFileName = notification.data.system.name
-      // const figmaToken = process.env.FIGMA_TOKEN;
-
-      // // Fetch Figma file
-      // const figmaResponse = await axios.get(`https://api.figma.com/v1/files/${figmaFileId}`, {
-      //   headers: {
-      //     'X-Figma-Token': figmaToken
-      //   }
-      // });
 
       getFigmaFileByName(figmaFileName).then(async figmaResponse => {
 
